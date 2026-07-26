@@ -1,56 +1,50 @@
-from flask import Flask, render_template_string, send_from_directory
+from flask import Flask, render_template_string
+import io
+import sys
 import os
 
 app = Flask(__name__)
 
-# Rota para servir as imagens salvas na pasta assets (mapas e gráficos)
-@app.route('/assets/<path:filename>')
-def serve_assets(filename):
-    return send_from_directory('assets', filename)
-
 @app.route('/')
 def home():
-    html_content = """
+    # Redireciona o stdout para capturar tudo o que o main.py imprime ao rodar
+    buffer = io.StringIO()
+    sys.stdout = buffer
+    
+    try:
+        # Importa e executa o main.py do seu projeto em tempo real
+        import main
+        # Se o seu main tiver uma função principal (ex: main.run() ou main.executar()),
+        # você pode chamá-la aqui se necessário.
+    except Exception as e:
+        print(f"Erro ao executar o projeto: {e}")
+    finally:
+        # Restaura a saída padrão do terminal
+        sys.stdout = sys.__stdout__
+    
+    # Obtém o texto gerado pela execução do projeto
+    saida_projeto = buffer.getvalue()
+    
+    html_content = f"""
     <!DOCTYPE html>
     <html lang="pt-br">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Intel Alimentar SLZ</title>
+        <title>Intel Alimentar SLZ - Execução</title>
         <style>
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f8; margin: 0; padding: 20px; color: #333; }
-            .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-            h1 { color: #1e3c72; margin-bottom: 5px; }
-            p.sub { color: #666; margin-top: 0; font-size: 1.05rem; }
-            .grid { display: grid; grid-template-columns: 1fr; gap: 25px; margin-top: 30px; }
-            @media (min-width: 768px) { .grid { grid-template-columns: 1fr 1fr; } }
-            .card { background: #fff; border: 1px solid #e1e8ed; border-radius: 8px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.04); }
-            .card h3 { margin-top: 0; color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 8px; }
-            .card img { width: 100%; height: auto; border-radius: 6px; }
-            .full-width { grid-column: 1 / -1; }
+            body {{ font-family: 'Courier New', Courier, monospace; background-color: #0d1117; color: #c9d1d9; margin: 0; padding: 20px; }}
+            .container {{ max-width: 1000px; margin: 0 auto; }}
+            h1 {{ font-family: Arial, sans-serif; color: #58a6ff; font-size: 22px; border-bottom: 1px solid #30363d; padding-bottom: 10px; }}
+            .terminal {{ background-color: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 20px; overflow-x: auto; white-space: pre-wrap; font-size: 14px; line-height: 1.5; color: #7ee787; }}
+            .status {{ font-family: Arial, sans-serif; font-size: 12px; color: #8b949e; margin-bottom: 15px; }}
         </style>
     </head>
     <body>
         <div class="container">
-            <h1>🌾 Intel Alimentar SLZ</h1>
-            <p class="sub">Plataforma de Inteligência e Análise de Vulnerabilidade Alimentar de São Luís</p>
-            
-            <div class="grid">
-                <div class="card">
-                    <h3>🗺️ Mapa de Calor de Vulnerabilidade</h3>
-                    <img src="/assets/mapa-de-calor-de-vulnerabilidade.png" alt="Mapa de Calor">
-                </div>
-                
-                <div class="card">
-                    <h3>📊 Análise Estatística</h3>
-                    <img src="/assets/analise-estatistica.png" alt="Análise Estatística">
-                </div>
-                
-                <div class="card full-width">
-                    <h3>📋 Plano de Ação Prioritário</h3>
-                    <img src="/assets/plano-de-acao-prioritario.png" alt="Plano de Ação">
-                </div>
-            </div>
+            <h1>🌾 Intel Alimentar SLZ - Processamento de Dados</h1>
+            <div class="status">⚡ Executado em tempo real via Serverless</div>
+            <div class="terminal">{saida_projeto if saida_projeto.strip() else "O projeto foi executado, mas não gerou nenhuma saída de texto."}</div>
         </div>
     </body>
     </html>
