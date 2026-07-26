@@ -2,6 +2,7 @@ flask
 requests
 faker
 pandas
+kagglehub[pandas-datasets]
 folium
 matplotlib
-kagglehub
+
